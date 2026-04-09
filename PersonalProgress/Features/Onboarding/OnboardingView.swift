@@ -148,7 +148,7 @@ struct OnboardingView: View {
                     in: modelContext
                 )
                 let defs = successDefinitionsByDomain[name] ?? []
-                for (defIndex, defText) in defs.enumerated() {
+                for (_, defText) in defs.enumerated() {
                     let trimmed = defText.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !trimmed.isEmpty else { continue }
                     _ = try domainService.addSuccessDefinition(

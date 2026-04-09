@@ -51,8 +51,9 @@ final class AccountabilityService {
     func status(for domain: Domain, year: Int, context: ModelContext) -> DomainStatus {
         guard let plan = domain.plan(forYear: year) else { return .new }
 
+        let domainName = domain.name
         let descriptor = FetchDescriptor<DomainWeeklyRating>(
-            predicate: #Predicate { $0.domainName == domain.name }
+            predicate: #Predicate { $0.domainName == domainName }
         )
         let allRatings = (try? context.fetch(descriptor)) ?? []
         let mostRecent = allRatings.max(by: { $0.createdAt < $1.createdAt })
