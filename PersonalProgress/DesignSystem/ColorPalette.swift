@@ -1,5 +1,13 @@
 import SwiftUI
 
+// MARK: - ShapeStyle shorthand (enables .foregroundStyle(.textPrimary) syntax)
+
+extension ShapeStyle where Self == Color {
+    static var textPrimary: Color { .textPrimary }
+    static var textSecondary: Color { .textSecondary }
+    static var textTertiary: Color { Color(UIColor.tertiaryLabel) }
+}
+
 extension Color {
 
     // MARK: - Brand
