@@ -15,6 +15,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Select Xcode 16
+        run: |
+          XCODE=$(find /Applications -maxdepth 1 -name "Xcode_16*.app" -type d 2>/dev/null | sort -V | tail -1)
+          if [ -n "$XCODE" ]; then
+            echo "Selecting $XCODE"
+            sudo xcode-select -s "$XCODE/Contents/Developer"
+          else
+            echo "Xcode 16 not found, using default"
+          fi
+          xcodebuild -version
+
       - name: Install xcodegen
         run: brew install xcodegen
 
@@ -32,7 +43,11 @@ jobs:
             -scheme PersonalProgress \
             -destination "platform=iOS Simulator,name=iPhone 16" \
             -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO | xcpretty
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee /tmp/build.log | xcpretty || {
+              echo "=== COMPILER ERRORS ==="
+              grep -E "error:|note:" /tmp/build.log | head -80
+              exit 1
+            }
 
       - name: Test
         run: |
@@ -42,7 +57,11 @@ jobs:
             -scheme PersonalProgress \
             -destination "platform=iOS Simulator,name=iPhone 16" \
             -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO | xcpretty
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee /tmp/test.log | xcpretty || {
+              echo "=== TEST ERRORS ==="
+              grep -E "error:|FAILED" /tmp/test.log | head -80
+              exit 1
+            }
 
       - name: Upload test results
         if: failure()
