@@ -30,7 +30,7 @@ jobs:
           xcodebuild build-for-testing \
             -project PersonalProgress.xcodeproj \
             -scheme PersonalProgress \
-            -destination "platform=iOS Simulator,name=iPhone 16,OS=18.2" \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO | xcpretty
 
@@ -40,7 +40,7 @@ jobs:
           xcodebuild test \
             -project PersonalProgress.xcodeproj \
             -scheme PersonalProgress \
-            -destination "platform=iOS Simulator,name=iPhone 16,OS=18.2" \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO | xcpretty
 
