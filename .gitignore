@@ -1,0 +1,60 @@
+# Xcode
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+*.xcresult
+DerivedData/
+Build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Packages — no CocoaPods or Carthage in this project
+# Included for safety if ever added
+Pods/
+Cartfile.resolved
+Carthage/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Coverage
+*.gcno
+*.gcda
+*.lcov
+coverage/
+
+# Environment / secrets
+.env
+*.pem
+*.p12
+*.mobileprovision
+AuthKey_*.p8
+
+# TestFlight / App Store
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
