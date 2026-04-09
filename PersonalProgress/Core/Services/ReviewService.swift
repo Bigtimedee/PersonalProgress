@@ -4,7 +4,6 @@ import SwiftData
 struct ReviewService {
 
     func review(forYear year: Int, quarter: Quarter, in context: ModelContext) throws -> QuarterlyReview? {
-        let quarterRaw = quarter.rawValue
         let descriptor = FetchDescriptor<QuarterlyReview>(
             predicate: #Predicate { $0.year == year && $0.quarter == quarter }
         )

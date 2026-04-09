@@ -239,7 +239,7 @@ struct LetterDetailView: View {
 
                 if let theme = letter.themeStatement, !theme.isEmpty {
                     Text(theme)
-                        .font(.displaySmall)
+                        .font(.displayMedium)
                         .italic()
                 }
 

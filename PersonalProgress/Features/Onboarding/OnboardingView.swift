@@ -153,7 +153,6 @@ struct OnboardingView: View {
                     guard !trimmed.isEmpty else { continue }
                     _ = try domainService.addSuccessDefinition(
                         text: trimmed,
-                        sortOrder: defIndex,
                         to: plan,
                         in: modelContext
                     )
