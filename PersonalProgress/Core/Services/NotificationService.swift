@@ -5,7 +5,7 @@ import UserNotifications
 /// This app uses local notifications only — no push, no remote server.
 final class NotificationService: NSObject {
 
-    static let shared = NotificationService()
+    nonisolated(unsafe) static let shared = NotificationService()
 
     private let center = UNUserNotificationCenter.current()
 

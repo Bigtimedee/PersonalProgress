@@ -43,7 +43,7 @@ enum DomainStatus {
 /// Local-first, privacy-first. No external servers. Not punitive.
 final class AccountabilityService {
 
-    static let shared = AccountabilityService()
+    nonisolated(unsafe) static let shared = AccountabilityService()
 
     // MARK: - Domain Status
 

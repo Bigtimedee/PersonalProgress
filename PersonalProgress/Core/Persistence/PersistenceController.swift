@@ -1,4 +1,4 @@
-import SwiftData
+@preconcurrency import SwiftData
 import Foundation
 
 /// Configures and owns the SwiftData ModelContainer for the app.
@@ -7,7 +7,7 @@ import Foundation
 /// requires adding it to the `schema` array below — nothing else.
 final class PersistenceController {
 
-    static let shared = PersistenceController()
+    nonisolated(unsafe) static let shared = PersistenceController()
 
     let container: ModelContainer
 
