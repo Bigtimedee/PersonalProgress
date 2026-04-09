@@ -39,7 +39,7 @@ struct ReflectionServiceTests {
     @Test("Reflection locks after 48 hours")
     func reflectionLocksAfter48Hours() throws {
         let pastDate = Date.now.addingTimeInterval(-49 * 60 * 60)
-        let reflection = try service.reflection(forWeekContaining: pastDate, in: context)
+        let reflection = try #require(try service.reflection(forWeekContaining: pastDate, in: context))
         #expect(reflection.isLocked)
     }
 }
