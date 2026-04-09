@@ -1,0 +1,68 @@
+name: PersonalProgress
+options:
+  bundleIdPrefix: com.bigtimedee
+  createIntermediateGroups: true
+  defaultConfig: Debug
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  PersonalProgress:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: PersonalProgress
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bigtimedee.PersonalProgress
+        INFOPLIST_FILE: PersonalProgress/App/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGNING_ALLOWED: NO
+
+  PersonalProgressTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: PersonalProgressTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bigtimedee.PersonalProgressTests
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGNING_ALLOWED: NO
+    dependencies:
+      - target: PersonalProgress
+
+  PersonalProgressUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: PersonalProgressUITests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bigtimedee.PersonalProgressUITests
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGNING_ALLOWED: NO
+    dependencies:
+      - target: PersonalProgress
+        embedded: false
+
+schemes:
+  PersonalProgress:
+    build:
+      targets:
+        PersonalProgress: all
+        PersonalProgressTests: [test]
+        PersonalProgressUITests: [test]
+    test:
+      targets:
+        - PersonalProgressTests
+        - PersonalProgressUITests
