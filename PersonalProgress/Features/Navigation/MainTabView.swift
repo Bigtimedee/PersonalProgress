@@ -13,9 +13,9 @@ struct MainTabView: View {
                     Label("Reflect", systemImage: "sparkles")
                 }
 
-            LetterView()
+            YearView()
                 .tabItem {
-                    Label("Letter", systemImage: "envelope.fill")
+                    Label("Year", systemImage: "calendar")
                 }
 
             ReviewsView()
