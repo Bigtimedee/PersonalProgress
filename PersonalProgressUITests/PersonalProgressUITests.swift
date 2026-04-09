@@ -1,5 +1,6 @@
 import XCTest
 
+@MainActor
 final class PersonalProgressUITests: XCTestCase {
     let app = XCUIApplication()
 
