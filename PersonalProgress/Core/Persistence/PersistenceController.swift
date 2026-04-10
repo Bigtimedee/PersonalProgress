@@ -44,6 +44,11 @@ final class PersistenceController {
         }
     }
 
+    // MARK: - UI Testing
+
+    /// In-memory container for UI tests — always starts empty so onboarding is always shown.
+    nonisolated(unsafe) static let uitesting = PersistenceController(inMemory: true)
+
     // MARK: - Preview
 
     /// In-memory container pre-populated with seed data for SwiftUI previews.

@@ -5,10 +5,16 @@ import SwiftData
 struct PersonalProgressApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
+    private var persistence: PersistenceController {
+        ProcessInfo.processInfo.arguments.contains("--uitesting")
+            ? PersistenceController.uitesting
+            : PersistenceController.shared
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(PersistenceController.shared.container)
+        .modelContainer(persistence.container)
     }
 }

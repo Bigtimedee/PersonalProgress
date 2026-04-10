@@ -18,58 +18,90 @@ final class PersonalProgressUITests: XCTestCase {
     func testOnboardingFlowCompletesSuccessfully() throws {
         let app = launchApp()
 
-        // Welcome screen
-        let getStartedButton = app.buttons["Get Started"]
-        XCTAssertTrue(getStartedButton.waitForExistence(timeout: 3))
-        getStartedButton.tap()
+        // Step 0: Welcome
+        let beginButton = app.buttons["Begin"]
+        XCTAssertTrue(beginButton.waitForExistence(timeout: 3))
+        beginButton.tap()
 
-        // Letter screen
+        // Step 1: Philosophy
+        let imReadyButton = app.buttons["I'm ready"]
+        XCTAssertTrue(imReadyButton.waitForExistence(timeout: 3))
+        imReadyButton.tap()
+
+        // Step 2: Annual Vision — type a letter then advance
         let textEditor = app.textViews.firstMatch
         XCTAssertTrue(textEditor.waitForExistence(timeout: 3))
         textEditor.tap()
         textEditor.typeText("This is my 2026 annual letter.")
 
-        let continueButton = app.buttons["Continue"]
-        XCTAssertTrue(continueButton.isEnabled)
-        continueButton.tap()
+        let setMyDomainsButton = app.buttons["Set My Domains"]
+        XCTAssertTrue(setMyDomainsButton.waitForExistence(timeout: 3))
+        XCTAssertTrue(setMyDomainsButton.isEnabled)
+        setMyDomainsButton.tap()
 
-        // Domains screen
-        let firstDomain = app.staticTexts.element(boundBy: 0)
-        XCTAssertTrue(firstDomain.waitForExistence(timeout: 3))
-
-        // Tap first domain to select
+        // Step 3: Domains — select one domain
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 3))
         app.cells.firstMatch.tap()
 
+        let defineSuccessButton = app.buttons["Define Success"]
+        XCTAssertTrue(defineSuccessButton.isEnabled)
+        defineSuccessButton.tap()
+
+        // Step 4: Success Definitions — fill in at least one definition
+        let definitionField = app.textFields.firstMatch
+        XCTAssertTrue(definitionField.waitForExistence(timeout: 3))
+        definitionField.tap()
+        definitionField.typeText("I will be consistent.")
+
+        let setCheckInDatesButton = app.buttons["Set Check-In Dates"]
+        XCTAssertTrue(setCheckInDatesButton.waitForExistence(timeout: 3))
+        XCTAssertTrue(setCheckInDatesButton.isEnabled)
+        setCheckInDatesButton.tap()
+
+        // Step 5: Quarterly Dates — already pre-filled, just advance
+        let almostDoneButton = app.buttons["Almost Done"]
+        XCTAssertTrue(almostDoneButton.waitForExistence(timeout: 3))
+        almostDoneButton.tap()
+
+        // Step 6: Confirmation
         let openMyYearButton = app.buttons["Open My Year"]
-        XCTAssertTrue(openMyYearButton.isEnabled)
+        XCTAssertTrue(openMyYearButton.waitForExistence(timeout: 3))
         openMyYearButton.tap()
 
         // Should now see main tab bar
-        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 3))
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 5))
     }
 
     @MainActor
-    func testContinueButtonDisabledWithEmptyLetter() throws {
+    func testSetMyDomainsDisabledWithEmptyLetter() throws {
         let app = launchApp()
-        app.buttons["Get Started"].tap()
 
-        let continueButton = app.buttons["Continue"]
-        XCTAssertTrue(continueButton.waitForExistence(timeout: 3))
-        XCTAssertFalse(continueButton.isEnabled)
+        app.buttons["Begin"].tap()
+        app.buttons["I'm ready"].waitForExistence(timeout: 3)
+        app.buttons["I'm ready"].tap()
+
+        let setMyDomainsButton = app.buttons["Set My Domains"]
+        XCTAssertTrue(setMyDomainsButton.waitForExistence(timeout: 3))
+        XCTAssertFalse(setMyDomainsButton.isEnabled)
     }
 
     @MainActor
-    func testOpenMyYearDisabledWithNoDomains() throws {
+    func testDefineSuccessDisabledWithNoDomains() throws {
         let app = launchApp()
-        app.buttons["Get Started"].tap()
+
+        app.buttons["Begin"].tap()
+        app.buttons["I'm ready"].waitForExistence(timeout: 3)
+        app.buttons["I'm ready"].tap()
 
         let textEditor = app.textViews.firstMatch
+        XCTAssertTrue(textEditor.waitForExistence(timeout: 3))
         textEditor.tap()
         textEditor.typeText("Letter content")
-        app.buttons["Continue"].tap()
 
-        let openMyYearButton = app.buttons["Open My Year"]
-        XCTAssertTrue(openMyYearButton.waitForExistence(timeout: 3))
-        XCTAssertFalse(openMyYearButton.isEnabled)
+        app.buttons["Set My Domains"].tap()
+
+        let defineSuccessButton = app.buttons["Define Success"]
+        XCTAssertTrue(defineSuccessButton.waitForExistence(timeout: 3))
+        XCTAssertFalse(defineSuccessButton.isEnabled)
     }
 }
