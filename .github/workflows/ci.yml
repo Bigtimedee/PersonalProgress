@@ -48,11 +48,28 @@ jobs:
             -scheme PersonalProgress \
             -destination "platform=iOS Simulator,name=iPhone 16 Pro" \
             -configuration Debug \
+            -resultBundlePath /tmp/build.xcresult \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee /tmp/build.log | xcpretty || {
               echo "=== COMPILER ERRORS ==="
               grep -E "error:|note:" /tmp/build.log | head -80
               exit 1
             }
+
+      - name: Inspect built app metadata
+        run: |
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -path "*/Build/Products/Debug-iphonesimulator/*.app" -maxdepth 6 -type d 2>/dev/null | head -1)
+          echo "APP_PATH=$APP_PATH"
+          if [ -n "$APP_PATH" ]; then
+            echo "=== App Info.plist ==="
+            plutil -p "$APP_PATH/Info.plist"
+            if [ -d "$APP_PATH/PlugIns" ]; then
+              echo "=== PlugIns ==="
+              find "$APP_PATH/PlugIns" -name "*.appex" -maxdepth 1 | while read appex; do
+                echo "---- $appex ----"
+                plutil -p "$appex/Info.plist"
+              done
+            fi
+          fi
 
       - name: Test
         run: |
@@ -62,15 +79,31 @@ jobs:
             -scheme PersonalProgress \
             -destination "platform=iOS Simulator,name=iPhone 16 Pro" \
             -configuration Debug \
+            -resultBundlePath /tmp/test.xcresult \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee /tmp/test.log | xcpretty || {
               echo "=== TEST ERRORS ==="
               grep -E "error:|FAILED" /tmp/test.log | head -80
               exit 1
             }
 
+      - name: Dump xcresult errors
+        if: failure()
+        run: |
+          for BUNDLE in /tmp/build.xcresult /tmp/test.xcresult; do
+            if [ -d "$BUNDLE" ]; then
+              echo "=== $BUNDLE ==="
+              xcrun xcresulttool get --path "$BUNDLE" --format json 2>/dev/null \
+                | grep -i "Invalid placeholder\|placeholder\|IXErrorDomain\|install the application\|NSExtension\|CFBundleVersion\|CFBundleShortVersionString" \
+                || echo "(no matching entries)"
+            fi
+          done
+
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v5
         with:
           name: test-results
-          path: ~/Library/Developer/Xcode/DerivedData/**/Logs/Test/
+          path: |
+            /tmp/build.xcresult
+            /tmp/test.xcresult
+            ~/Library/Developer/Xcode/DerivedData/**/Logs/Test/
