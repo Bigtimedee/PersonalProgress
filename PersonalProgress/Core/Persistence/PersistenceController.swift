@@ -7,7 +7,9 @@ import Foundation
 /// requires adding it to the `schema` array below — nothing else.
 final class PersistenceController {
 
-    nonisolated(unsafe) static let shared = PersistenceController()
+    nonisolated(unsafe) static let shared = PersistenceController(
+        inMemory: ProcessInfo.processInfo.arguments.contains("--uitesting")
+    )
 
     let container: ModelContainer
 
@@ -29,6 +31,13 @@ final class PersistenceController {
     // MARK: - Init
 
     private init(inMemory: Bool = false) {
+        print("[PersistenceController] mode=\(inMemory ? "in-memory" : "disk")")
+        if !inMemory {
+            let appSupport = FileManager.default
+                .urls(for: .applicationSupportDirectory, in: .userDomainMask)
+                .first!
+            try? FileManager.default.createDirectory(at: appSupport, withIntermediateDirectories: true)
+        }
         let configuration = ModelConfiguration(
             schema: PersistenceController.schema,
             isStoredInMemoryOnly: inMemory,
@@ -43,11 +52,6 @@ final class PersistenceController {
             fatalError("Failed to initialize ModelContainer: \(error)")
         }
     }
-
-    // MARK: - UI Testing
-
-    /// In-memory container for UI tests — always starts empty so onboarding is always shown.
-    nonisolated(unsafe) static let uitesting = PersistenceController(inMemory: true)
 
     // MARK: - Preview
 
