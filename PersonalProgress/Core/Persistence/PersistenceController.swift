@@ -35,8 +35,8 @@ final class PersistenceController {
         if inMemory {
             print("Persistence mode: in-memory (UITesting)")
             configuration = ModelConfiguration(
+                "PersonalProgress",
                 schema: PersistenceController.schema,
-                url: URL(fileURLWithPath: "/dev/null"),
                 isStoredInMemoryOnly: true,
                 allowsSave: true
             )
@@ -47,9 +47,8 @@ final class PersistenceController {
                 .first!
             try? FileManager.default.createDirectory(at: appSupport, withIntermediateDirectories: true)
             configuration = ModelConfiguration(
-                schema: PersistenceController.schema,
                 url: appSupport.appendingPathComponent("PersonalProgress.store"),
-                isStoredInMemoryOnly: false,
+                schema: PersistenceController.schema,
                 allowsSave: true
             )
         }

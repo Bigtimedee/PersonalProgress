@@ -12,8 +12,8 @@ struct ReflectionServiceTests {
     init() throws {
         let schema = Schema([WeeklyReflection.self, DomainWeeklyRating.self])
         let config = ModelConfiguration(
+            "ReflectionTests",
             schema: schema,
-            url: URL(fileURLWithPath: "/dev/null"),
             isStoredInMemoryOnly: true
         )
         container = try ModelContainer(for: schema, configurations: config)
