@@ -23,7 +23,7 @@ final class DailyFocus {
     var createdAt: Date
 
     /// Optional: link to a specific intention this focus item advances.
-    var intentionID: PersistentIdentifier?
+    @Relationship var intention: Intention?
 
     init(
         weeklyReflection: WeeklyReflection? = nil,
