@@ -52,7 +52,7 @@ jobs:
             -resultBundlePath /tmp/build.xcresult \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee /tmp/build.log | xcpretty || {
               echo "=== COMPILER ERRORS ==="
-              grep -E "error:|note:" /tmp/build.log | head -80
+              grep -E "error:|note:" /tmp/build.log | head -80 || true
               exit 1
             }
 
@@ -94,7 +94,7 @@ jobs:
             -resultBundlePath /tmp/test.xcresult \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee /tmp/test.log | xcpretty || {
               echo "=== TEST ERRORS ==="
-              grep -E "error:|FAILED|failed to install" /tmp/test.log | head -80
+              grep -E "error:|FAILED|failed to install" /tmp/test.log | head -80 || true
               exit 1
             }
 

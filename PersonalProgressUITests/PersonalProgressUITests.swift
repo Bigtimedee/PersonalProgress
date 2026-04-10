@@ -14,6 +14,20 @@ final class PersonalProgressUITests: XCTestCase {
         return app
     }
 
+    // MARK: - Helpers
+
+    /// Taps the annual letter TextEditor and waits for the keyboard before typing.
+    @MainActor
+    private func typeIntoAnnualLetter(_ text: String, app: XCUIApplication) {
+        let textEditor = app.textViews["onboarding.annualLetter"]
+        XCTAssertTrue(textEditor.waitForExistence(timeout: 5))
+        textEditor.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 3))
+        textEditor.typeText(text)
+    }
+
+    // MARK: - Tests
+
     @MainActor
     func testOnboardingFlowCompletesSuccessfully() throws {
         let app = launchApp()
@@ -28,11 +42,8 @@ final class PersonalProgressUITests: XCTestCase {
         XCTAssertTrue(imReadyButton.waitForExistence(timeout: 3))
         imReadyButton.tap()
 
-        // Step 2: Annual Vision — type a letter then advance
-        let textEditor = app.textViews.firstMatch
-        XCTAssertTrue(textEditor.waitForExistence(timeout: 3))
-        textEditor.tap()
-        textEditor.typeText("This is my 2026 annual letter.")
+        // Step 2: Annual Vision
+        typeIntoAnnualLetter("This is my 2026 annual letter.", app: app)
 
         let setMyDomainsButton = app.buttons["Set My Domains"]
         XCTAssertTrue(setMyDomainsButton.waitForExistence(timeout: 3))
@@ -51,6 +62,7 @@ final class PersonalProgressUITests: XCTestCase {
         let definitionField = app.textFields.firstMatch
         XCTAssertTrue(definitionField.waitForExistence(timeout: 3))
         definitionField.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 3))
         definitionField.typeText("I will be consistent.")
 
         let setCheckInDatesButton = app.buttons["Set Check-In Dates"]
@@ -77,7 +89,7 @@ final class PersonalProgressUITests: XCTestCase {
         let app = launchApp()
 
         app.buttons["Begin"].tap()
-        app.buttons["I'm ready"].waitForExistence(timeout: 3)
+        XCTAssertTrue(app.buttons["I'm ready"].waitForExistence(timeout: 3))
         app.buttons["I'm ready"].tap()
 
         let setMyDomainsButton = app.buttons["Set My Domains"]
@@ -90,15 +102,14 @@ final class PersonalProgressUITests: XCTestCase {
         let app = launchApp()
 
         app.buttons["Begin"].tap()
-        app.buttons["I'm ready"].waitForExistence(timeout: 3)
+        XCTAssertTrue(app.buttons["I'm ready"].waitForExistence(timeout: 3))
         app.buttons["I'm ready"].tap()
 
-        let textEditor = app.textViews.firstMatch
-        XCTAssertTrue(textEditor.waitForExistence(timeout: 3))
-        textEditor.tap()
-        textEditor.typeText("Letter content")
+        typeIntoAnnualLetter("Letter content", app: app)
 
-        app.buttons["Set My Domains"].tap()
+        let setMyDomainsButton = app.buttons["Set My Domains"]
+        XCTAssertTrue(setMyDomainsButton.waitForExistence(timeout: 3))
+        setMyDomainsButton.tap()
 
         let defineSuccessButton = app.buttons["Define Success"]
         XCTAssertTrue(defineSuccessButton.waitForExistence(timeout: 3))

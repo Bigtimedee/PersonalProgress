@@ -359,6 +359,7 @@ private struct AnnualVisionStep: View {
                             .background(Color.surfaceElevated)
                             .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
                             .padding(.horizontal, AppTheme.Spacing.xl)
+                            .accessibilityIdentifier("onboarding.annualLetter")
                             .overlay(alignment: .topLeading) {
                                 if letterText.isEmpty {
                                     Text("Write your vision for the year here — who you want to be, what matters most, what you are committed to…")
