@@ -1,18 +1,23 @@
 import XCTest
 
-@MainActor
 final class PersonalProgressUITests: XCTestCase {
-    private var app: XCUIApplication!
 
-    override func setUp() async throws {
-        try await super.setUp()
+    override func setUpWithError() throws {
         continueAfterFailure = false
-        app = XCUIApplication()
-        app.launchArguments = ["--uitesting"]
-        app.launch()
     }
 
+    @MainActor
+    private func launchApp() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = ["--uitesting"]
+        app.launch()
+        return app
+    }
+
+    @MainActor
     func testOnboardingFlowCompletesSuccessfully() throws {
+        let app = launchApp()
+
         // Welcome screen
         let getStartedButton = app.buttons["Get Started"]
         XCTAssertTrue(getStartedButton.waitForExistence(timeout: 3))
@@ -43,7 +48,9 @@ final class PersonalProgressUITests: XCTestCase {
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 3))
     }
 
+    @MainActor
     func testContinueButtonDisabledWithEmptyLetter() throws {
+        let app = launchApp()
         app.buttons["Get Started"].tap()
 
         let continueButton = app.buttons["Continue"]
@@ -51,7 +58,9 @@ final class PersonalProgressUITests: XCTestCase {
         XCTAssertFalse(continueButton.isEnabled)
     }
 
+    @MainActor
     func testOpenMyYearDisabledWithNoDomains() throws {
+        let app = launchApp()
         app.buttons["Get Started"].tap()
 
         let textEditor = app.textViews.firstMatch
