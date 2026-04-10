@@ -98,6 +98,14 @@ jobs:
               exit 1
             }
 
+      - name: Dump persistence mode from simulator logs
+        if: failure()
+        run: |
+          echo "=== Persistence mode ==="
+          grep -r "Persistence mode:" ~/Library/Logs/CoreSimulator/ 2>/dev/null | tail -20 || \
+            grep -r "Persistence mode:" /tmp/test.log 2>/dev/null | tail -20 || \
+            echo "(no persistence mode log found)"
+
       - name: Dump xcresult errors
         if: failure()
         run: |

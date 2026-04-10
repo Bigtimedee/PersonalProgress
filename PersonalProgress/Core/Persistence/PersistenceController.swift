@@ -31,18 +31,28 @@ final class PersistenceController {
     // MARK: - Init
 
     private init(inMemory: Bool = false) {
-        print("[PersistenceController] mode=\(inMemory ? "in-memory" : "disk")")
-        if !inMemory {
+        let configuration: ModelConfiguration
+        if inMemory {
+            print("Persistence mode: in-memory (UITesting)")
+            configuration = ModelConfiguration(
+                schema: PersistenceController.schema,
+                url: URL(fileURLWithPath: "/dev/null"),
+                isStoredInMemoryOnly: true,
+                allowsSave: true
+            )
+        } else {
+            print("Persistence mode: disk")
             let appSupport = FileManager.default
                 .urls(for: .applicationSupportDirectory, in: .userDomainMask)
                 .first!
             try? FileManager.default.createDirectory(at: appSupport, withIntermediateDirectories: true)
+            configuration = ModelConfiguration(
+                schema: PersistenceController.schema,
+                url: appSupport.appendingPathComponent("PersonalProgress.store"),
+                isStoredInMemoryOnly: false,
+                allowsSave: true
+            )
         }
-        let configuration = ModelConfiguration(
-            schema: PersistenceController.schema,
-            isStoredInMemoryOnly: inMemory,
-            allowsSave: true
-        )
         do {
             container = try ModelContainer(
                 for: PersistenceController.schema,
