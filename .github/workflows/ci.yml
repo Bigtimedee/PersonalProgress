@@ -32,6 +32,11 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
+      - name: List available simulators
+        run: |
+          xcrun simctl list devices available
+          xcodebuild -showdestinations -scheme PersonalProgress -project PersonalProgress.xcodeproj 2>/dev/null || true
+
       - name: Install xcpretty
         run: gem install xcpretty --no-document
 
@@ -41,7 +46,7 @@ jobs:
           xcodebuild build-for-testing \
             -project PersonalProgress.xcodeproj \
             -scheme PersonalProgress \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -destination "platform=iOS Simulator,name=iPhone 16 Pro" \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee /tmp/build.log | xcpretty || {
               echo "=== COMPILER ERRORS ==="
@@ -55,7 +60,7 @@ jobs:
           xcodebuild test \
             -project PersonalProgress.xcodeproj \
             -scheme PersonalProgress \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -destination "platform=iOS Simulator,name=iPhone 16 Pro" \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee /tmp/test.log | xcpretty || {
               echo "=== TEST ERRORS ==="
