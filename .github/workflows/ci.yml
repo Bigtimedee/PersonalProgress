@@ -112,31 +112,37 @@ jobs:
           BUNDLE=/tmp/test.xcresult
           if [ -d "$BUNDLE" ]; then
             echo "=== xcresult test failures ==="
-            xcrun xcresulttool get --path "$BUNDLE" --format json 2>/dev/null \
-              | python3 -c "
+            cat > /tmp/parse_xcresult.py << 'PYEOF'
 import json, sys
+
 def walk(obj):
     if isinstance(obj, dict):
         status = obj.get('testStatus', {})
         if isinstance(status, dict) and status.get('_value') == 'Failure':
-            name = obj.get('identifier', {}).get('_value', obj.get('name', {}).get('_value', '?'))
-            print(f'FAILED: {name}')
-            for s in obj.get('failureSummaries', {}).get('_values', []):
+            ident = obj.get('identifier', {})
+            nm = obj.get('name', {})
+            name = ident.get('_value', nm.get('_value', '?'))
+            print('FAILED: ' + name)
+            summaries = obj.get('failureSummaries', {}).get('_values', [])
+            for s in summaries:
                 msg = s.get('message', {}).get('_value', '')
                 loc = s.get('sourceCodeContext', {}).get('location', {})
-                file = loc.get('url', {}).get('_value', '')
-                line = loc.get('lineNumber', {}).get('_value', '')
-                print(f'  {msg}  ({file}:{line})')
+                fpath = loc.get('url', {}).get('_value', '')
+                lineno = loc.get('lineNumber', {}).get('_value', '')
+                print('  ' + msg + '  (' + fpath + ':' + str(lineno) + ')')
         for v in obj.values():
             walk(v)
     elif isinstance(obj, list):
         for v in obj:
             walk(v)
+
 try:
     walk(json.load(sys.stdin))
 except Exception as e:
-    print(f'(parse error: {e})')
-" || echo "(xcresult not found or parse failed)"
+    print('(parse error: ' + str(e) + ')')
+PYEOF
+            xcrun xcresulttool get --path "$BUNDLE" --format json 2>/dev/null \
+              | python3 /tmp/parse_xcresult.py || echo "(xcresult parse failed)"
           fi
 
       - name: Upload test results
