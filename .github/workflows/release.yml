@@ -92,7 +92,11 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE_SPECIFIER="PersonalProgress AppStore" \
-            2>&1 | xcpretty || (cat /tmp/archive.log; exit 1)
+            2>&1 | tee /tmp/archive.log | xcpretty || {
+              echo "=== ARCHIVE ERRORS ==="
+              grep -E "error:|note:" /tmp/archive.log | head -80 || true
+              exit 1
+            }
 
       - name: Export IPA
         env:
