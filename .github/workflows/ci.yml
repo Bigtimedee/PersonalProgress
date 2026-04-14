@@ -79,7 +79,12 @@ jobs:
           if [ -n "$UDID" ]; then
             xcrun simctl boot "$UDID" 2>&1 || true
             echo "Waiting for simulator to boot..."
-            xcrun simctl bootstatus "$UDID" -b 2>&1 || sleep 15
+            xcrun simctl bootstatus "$UDID" -b 2>&1 || true
+            # Open Simulator.app to ensure SpringBoard is fully initialized
+            open -a Simulator --args -CurrentDeviceUDID "$UDID" || true
+            sleep 30
+            # Confirm SpringBoard is running
+            xcrun simctl spawn "$UDID" launchctl list | grep -i springboard || true
           fi
 
       - name: Test
