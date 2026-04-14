@@ -10,7 +10,18 @@ struct ReflectionServiceTests {
     private let service = ReflectionService()
 
     init() throws {
-        let schema = Schema([WeeklyReflection.self, DomainWeeklyRating.self])
+        let schema = Schema([
+            AnnualLetter.self,
+            Domain.self,
+            DomainPlan.self,
+            SuccessDefinition.self,
+            Intention.self,
+            WeeklyReflection.self,
+            DomainWeeklyRating.self,
+            DailyFocus.self,
+            QuarterlyReview.self,
+            DomainQuarterlyReview.self,
+        ])
         let config = ModelConfiguration(
             "ReflectionTests",
             schema: schema,

@@ -93,8 +93,8 @@ jobs:
             -derivedDataPath /tmp/DerivedData \
             -resultBundlePath /tmp/test.xcresult \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee /tmp/test.log | xcpretty || {
-              echo "=== TEST ERRORS ==="
-              grep -E "error:|FAILED|failed to install" /tmp/test.log | head -80 || true
+              echo "=== SWIFT TESTING / XCTEST FAILURES (last 300 lines of raw log) ==="
+              tail -300 /tmp/test.log || true
               exit 1
             }
 
@@ -106,17 +106,38 @@ jobs:
             grep -r "Persistence mode:" /tmp/test.log 2>/dev/null | tail -20 || \
             echo "(no persistence mode log found)"
 
-      - name: Dump xcresult errors
+      - name: Dump xcresult test failures
         if: failure()
         run: |
-          for BUNDLE in /tmp/build.xcresult /tmp/test.xcresult; do
-            if [ -d "$BUNDLE" ]; then
-              echo "=== $BUNDLE ==="
-              xcrun xcresulttool get --path "$BUNDLE" --format json 2>/dev/null \
-                | grep -i "Invalid placeholder\|placeholder\|IXErrorDomain\|install the application\|NSExtension\|CFBundleVersion\|CFBundleShortVersionString" \
-                || echo "(no matching entries)"
-            fi
-          done
+          BUNDLE=/tmp/test.xcresult
+          if [ -d "$BUNDLE" ]; then
+            echo "=== xcresult test failures ==="
+            xcrun xcresulttool get --path "$BUNDLE" --format json 2>/dev/null \
+              | python3 -c "
+import json, sys
+def walk(obj):
+    if isinstance(obj, dict):
+        status = obj.get('testStatus', {})
+        if isinstance(status, dict) and status.get('_value') == 'Failure':
+            name = obj.get('identifier', {}).get('_value', obj.get('name', {}).get('_value', '?'))
+            print(f'FAILED: {name}')
+            for s in obj.get('failureSummaries', {}).get('_values', []):
+                msg = s.get('message', {}).get('_value', '')
+                loc = s.get('sourceCodeContext', {}).get('location', {})
+                file = loc.get('url', {}).get('_value', '')
+                line = loc.get('lineNumber', {}).get('_value', '')
+                print(f'  {msg}  ({file}:{line})')
+        for v in obj.values():
+            walk(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            walk(v)
+try:
+    walk(json.load(sys.stdin))
+except Exception as e:
+    print(f'(parse error: {e})')
+" || echo "(xcresult not found or parse failed)"
+          fi
 
       - name: Upload test results
         if: failure()
