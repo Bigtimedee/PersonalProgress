@@ -92,6 +92,7 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE_SPECIFIER="PersonalProgress AppStore" \
+            DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
             2>&1 | tee /tmp/archive.log | xcpretty || {
               echo "=== ARCHIVE ERRORS ==="
               grep -E "error:|note:" /tmp/archive.log | head -80 || true
