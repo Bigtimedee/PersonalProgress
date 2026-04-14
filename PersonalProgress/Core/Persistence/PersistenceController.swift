@@ -47,8 +47,8 @@ final class PersistenceController {
                 .first!
             try? FileManager.default.createDirectory(at: appSupport, withIntermediateDirectories: true)
             configuration = ModelConfiguration(
-                url: appSupport.appendingPathComponent("PersonalProgress.store"),
                 schema: PersistenceController.schema,
+                url: appSupport.appendingPathComponent("PersonalProgress.store"),
                 allowsSave: true
             )
         }
