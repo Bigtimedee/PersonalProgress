@@ -6,6 +6,7 @@ struct DomainDetailView: View {
     let year: Int
 
     @Environment(\.modelContext) private var modelContext
+    @State private var showSettings = false
 
     private var plan: DomainPlan? { domain.plan(forYear: year) }
     private var status: DomainStatus {
@@ -38,6 +39,18 @@ struct DomainDetailView: View {
         .background(Color.surfaceGrouped)
         .navigationTitle(domain.name)
         .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showSettings = true
+                } label: {
+                    Image(systemName: "slider.horizontal.3")
+                }
+            }
+        }
+        .sheet(isPresented: $showSettings) {
+            DomainSettingsView(domain: domain)
+        }
     }
 
     // MARK: - Header
