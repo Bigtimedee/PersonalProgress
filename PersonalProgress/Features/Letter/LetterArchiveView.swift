@@ -32,7 +32,7 @@ struct LetterArchiveView: View {
             if let yearWord = letter.yearWord, !yearWord.isEmpty {
                 Text(yearWord.uppercased())
                     .font(.captionSmall)
-                    .foregroundStyle(.appAccent)
+                    .foregroundStyle(Color.appAccent)
                     .tracking(1.5)
             }
             Text(String(letter.year))
