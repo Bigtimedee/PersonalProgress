@@ -3,6 +3,9 @@ import SwiftData
 
 struct ReflectView: View {
     @Environment(\.modelContext) private var modelContext
+    @Query(filter: #Predicate<Domain> { !$0.isArchived }, sort: \Domain.sortOrder)
+    private var domains: [Domain]
+
     @State private var currentReflection: WeeklyReflection?
 
     private let reflectionService = ReflectionService()
@@ -11,7 +14,7 @@ struct ReflectView: View {
         NavigationStack {
             Group {
                 if let reflection = currentReflection {
-                    WeeklyReflectionForm(reflection: reflection)
+                    WeeklyReflectionForm(reflection: reflection, domains: domains)
                 } else {
                     ProgressView("Loading…")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -20,6 +23,13 @@ struct ReflectView: View {
             }
             .navigationTitle("Reflect")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink(destination: ReflectionHistoryView()) {
+                        Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                    }
+                }
+            }
         }
         .task { await loadCurrentReflection() }
     }
@@ -33,6 +43,8 @@ struct ReflectView: View {
 
 struct WeeklyReflectionForm: View {
     @Bindable var reflection: WeeklyReflection
+    let domains: [Domain]
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         ScrollView {
@@ -44,7 +56,13 @@ struct WeeklyReflectionForm: View {
                 }
                 lookBackSection
                 highlightSection
+                lowlightSection
+                learningSection
+                if !domains.isEmpty {
+                    domainRatingsSection
+                }
                 prioritiesSection
+                intentionSection
             }
             .padding(.vertical, AppTheme.Spacing.lg)
         }
@@ -124,6 +142,124 @@ struct WeeklyReflectionForm: View {
         }
     }
 
+    // MARK: - Lowlight
+
+    private var lowlightSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            SectionHeader(title: "Lowlight")
+                .padding(.horizontal, AppTheme.Spacing.xl)
+
+            AppCard {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                    FormFieldLabel(title: "What didn't go well?")
+                    TextField(
+                        "What struggled or fell short?",
+                        text: Binding(
+                            get: { reflection.weekLowlight ?? "" },
+                            set: { reflection.weekLowlight = $0.isEmpty ? nil : $0 }
+                        ),
+                        axis: .vertical
+                    )
+                    .font(.bodySmall)
+                    .disabled(reflection.isLocked)
+                }
+            }
+            .padding(.horizontal, AppTheme.Spacing.xl)
+        }
+    }
+
+    // MARK: - Learning
+
+    private var learningSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            SectionHeader(title: "Learning")
+                .padding(.horizontal, AppTheme.Spacing.xl)
+
+            AppCard {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                    FormFieldLabel(title: "One concrete learning")
+                    TextField(
+                        "What did you learn this week?",
+                        text: Binding(
+                            get: { reflection.weekLearning ?? "" },
+                            set: { reflection.weekLearning = $0.isEmpty ? nil : $0 }
+                        ),
+                        axis: .vertical
+                    )
+                    .font(.bodySmall)
+                    .disabled(reflection.isLocked)
+                }
+            }
+            .padding(.horizontal, AppTheme.Spacing.xl)
+        }
+    }
+
+    // MARK: - Domain Ratings
+
+    private var domainRatingsSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            SectionHeader(title: "Domain Ratings")
+                .padding(.horizontal, AppTheme.Spacing.xl)
+
+            AppCard {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                    ForEach(domains) { domain in
+                        if domain.persistentModelID != domains.first?.persistentModelID {
+                            Divider()
+                        }
+                        domainRatingRow(domain: domain)
+                    }
+                }
+            }
+            .padding(.horizontal, AppTheme.Spacing.xl)
+        }
+    }
+
+    private func domainRatingRow(domain: Domain) -> some View {
+        let existingRating = reflection.domainRatings.first { $0.domainName == domain.name }
+        return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            HStack(spacing: AppTheme.Spacing.sm) {
+                DomainIconBadge(
+                    iconName: DomainIcon(rawValue: domain.iconName)?.rawValue ?? "star.fill",
+                    size: 28
+                )
+                Text(domain.name)
+                    .font(.bodyMedium)
+                Spacer()
+            }
+            RatingPicker(score: existingRating?.score, isDisabled: reflection.isLocked) { score in
+                upsertRating(for: domain, score: score)
+            }
+            if let existing = existingRating {
+                TextField(
+                    "Add a note…",
+                    text: Binding(
+                        get: { existing.note ?? "" },
+                        set: { existing.note = $0.isEmpty ? nil : $0 }
+                    ),
+                    axis: .vertical
+                )
+                .font(.captionMedium)
+                .foregroundStyle(.textSecondary)
+                .disabled(reflection.isLocked)
+            }
+        }
+    }
+
+    private func upsertRating(for domain: Domain, score: WeekScore) {
+        if let existing = reflection.domainRatings.first(where: { $0.domainName == domain.name }) {
+            existing.score = score
+        } else {
+            let r = DomainWeeklyRating(
+                reflection: reflection,
+                domainName: domain.name,
+                score: score
+            )
+            modelContext.insert(r)
+            reflection.domainRatings.append(r)
+        }
+    }
+
     // MARK: - Priorities
 
     private var prioritiesSection: some View {
@@ -164,6 +300,32 @@ struct WeeklyReflectionForm: View {
                                 .foregroundStyle(Color.appAccent)
                         }
                     }
+                }
+            }
+            .padding(.horizontal, AppTheme.Spacing.xl)
+        }
+    }
+
+    // MARK: - Intention
+
+    private var intentionSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            SectionHeader(title: "Weekly Intention")
+                .padding(.horizontal, AppTheme.Spacing.xl)
+
+            AppCard {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                    FormFieldLabel(title: "How do you want to show up?")
+                    TextField(
+                        "Set a tone or theme for the week…",
+                        text: Binding(
+                            get: { reflection.weeklyIntentionText ?? "" },
+                            set: { reflection.weeklyIntentionText = $0.isEmpty ? nil : $0 }
+                        ),
+                        axis: .vertical
+                    )
+                    .font(.bodySmall)
+                    .disabled(reflection.isLocked)
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.xl)

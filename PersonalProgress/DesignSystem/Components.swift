@@ -221,6 +221,40 @@ struct FormFieldLabel: View {
     }
 }
 
+// MARK: - RatingPicker
+
+/// A 1–5 score picker for weekly domain self-assessment.
+struct RatingPicker: View {
+    let score: WeekScore?
+    var isDisabled: Bool = false
+    let onSelect: (WeekScore) -> Void
+
+    var body: some View {
+        HStack(spacing: AppTheme.Spacing.xs) {
+            ForEach(WeekScore.allCases, id: \.self) { option in
+                Button {
+                    onSelect(option)
+                } label: {
+                    Text(option.symbol)
+                        .font(.captionSmall.weight(.semibold))
+                        .frame(width: 34, height: 34)
+                        .background(score == option ? Color.appAccent : Color.surfaceElevated)
+                        .foregroundStyle(score == option ? .white : Color.textSecondary)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .disabled(isDisabled)
+            }
+            if let score {
+                Text(score.label)
+                    .font(.captionSmall)
+                    .foregroundStyle(.textTertiary)
+                    .padding(.leading, AppTheme.Spacing.xs)
+            }
+        }
+    }
+}
+
 // MARK: - Date extension for greeting
 
 extension Date {
